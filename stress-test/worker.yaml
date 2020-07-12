@@ -1,0 +1,949 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: vis-monitor1
+spec:
+  selector:
+    app: worker1
+  ports:
+    - name: http
+      port: 80
+      targetPort: 9500
+  type: NodePort
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: worker1
+spec:
+  selector:
+    app: worker1
+  ports:
+    - name: synerex
+      port: 700
+      targetPort: 10000
+    - name: nodeid
+      port: 600
+      targetPort: 9000
+
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: worker1
+  labels:
+    app: worker1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker1
+  template:
+    metadata:
+      labels:
+        app: worker1
+    spec:
+      containers:
+      - name: nodeid-server
+        image: synerex-simulation/nodeid-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        ports:
+        - containerPort: 9000
+      - name: synerex-server
+        image: synerex-simulation/synerex-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        ports:
+        - containerPort: 10000
+      - name: worker-provider
+        image: synerex-simulation/worker-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: MASTER_SYNEREX_SERVER
+          value: master:700
+        - name: MASTER_NODEID_SERVER
+          value: master:600
+        - name: PORT
+          value: '9980'
+        ports:
+        - containerPort: 9980
+      - name: agent-provider
+        image: synerex-simulation/agent-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: AREA
+          value: "{\"id\":0, \"name\":\"Nagoya\", \"duplicate_area\": [{\"latitude\":35.15515326666666, \"longitude\":136.97152533333332},{\"latitude\":35.15097806666667, \"longitude\":136.97152533333332},{\"latitude\":35.15097806666667, \"longitude\":136.9788893333333},{\"latitude\":35.15515326666666, \"longitude\":136.9788893333333}], \"control_area\": [{\"latitude\":35.15480533333333, \"longitude\":136.972139},{\"latitude\":35.151326, \"longitude\":136.972139},{\"latitude\":35.151326, \"longitude\":136.97827566666666},{\"latitude\":35.15480533333333, \"longitude\":136.97827566666666}]}"
+      - name: visualization-provider
+        image: synerex-simulation/visualization-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: VIS_ADDRESS
+          value: ':9500'
+###########################################  
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: vis-monitor2
+spec:
+  selector:
+    app: worker2
+  ports:
+    - name: http
+      port: 80
+      targetPort: 9500
+  type: NodePort
+  
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: worker2
+spec:
+  selector:
+    app: worker2
+  ports:
+    - name: synerex
+      port: 700
+      targetPort: 10000
+    - name: nodeid
+      port: 600
+      targetPort: 9000
+  
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: worker2
+  labels:
+    app: worker2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker2
+  template:
+    metadata:
+      labels:
+        app: worker2
+    spec:
+      containers:
+      - name: nodeid-server
+        image: synerex-simulation/nodeid-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        ports:
+        - containerPort: 9000
+      - name: synerex-server
+        image: synerex-simulation/synerex-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        ports:
+        - containerPort: 10000
+      - name: worker-provider
+        image: synerex-simulation/worker-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: MASTER_SYNEREX_SERVER
+          value: master:700
+        - name: MASTER_NODEID_SERVER
+          value: master:600
+        - name: PORT
+          value: '9980'
+        ports:
+        - containerPort: 9980
+      - name: agent-provider
+        image: synerex-simulation/agent-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: AREA
+          value: "{\"id\":1, \"name\":\"Nagoya\", \"duplicate_area\": [{\"latitude\":35.15515326666666, \"longitude\":136.97152533333332},{\"latitude\":35.15097806666667, \"longitude\":136.97152533333332},{\"latitude\":35.15097806666667, \"longitude\":136.9788893333333},{\"latitude\":35.15515326666666, \"longitude\":136.9788893333333}], \"control_area\": [{\"latitude\":35.15480533333333, \"longitude\":136.972139},{\"latitude\":35.151326, \"longitude\":136.972139},{\"latitude\":35.151326, \"longitude\":136.97827566666666},{\"latitude\":35.15480533333333, \"longitude\":136.97827566666666}]}"
+      - name: visualization-provider
+        image: synerex-simulation/visualization-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: VIS_ADDRESS
+          value: ':9500'
+
+###########################################################
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: vis-monitor3
+spec:
+  selector:
+    app: worker3
+  ports:
+    - name: http
+      port: 80
+      targetPort: 9500
+  type: NodePort
+  
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: worker3
+spec:
+  selector:
+    app: worker3
+  ports:
+    - name: synerex
+      port: 700
+      targetPort: 10000
+    - name: nodeid
+      port: 600
+      targetPort: 9000
+  
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: worker3
+  labels:
+    app: worker3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker3
+  template:
+    metadata:
+      labels:
+        app: worker3
+    spec:
+      containers:
+      - name: nodeid-server
+        image: synerex-simulation/nodeid-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        ports:
+        - containerPort: 9000
+      - name: synerex-server
+        image: synerex-simulation/synerex-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        ports:
+        - containerPort: 10000
+      - name: worker-provider
+        image: synerex-simulation/worker-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: MASTER_SYNEREX_SERVER
+          value: master:700
+        - name: MASTER_NODEID_SERVER
+          value: master:600
+        - name: PORT
+          value: '9980'
+        ports:
+        - containerPort: 9980
+      - name: agent-provider
+        image: synerex-simulation/agent-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: AREA
+          value: "{\"id\":2, \"name\":\"Nagoya\", \"duplicate_area\": [{\"latitude\":35.15515326666666, \"longitude\":136.97152533333332},{\"latitude\":35.15097806666667, \"longitude\":136.97152533333332},{\"latitude\":35.15097806666667, \"longitude\":136.9788893333333},{\"latitude\":35.15515326666666, \"longitude\":136.9788893333333}], \"control_area\": [{\"latitude\":35.15480533333333, \"longitude\":136.972139},{\"latitude\":35.151326, \"longitude\":136.972139},{\"latitude\":35.151326, \"longitude\":136.97827566666666},{\"latitude\":35.15480533333333, \"longitude\":136.97827566666666}]}"
+      - name: visualization-provider
+        image: synerex-simulation/visualization-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: VIS_ADDRESS
+          value: ':9500'
+####################################################
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: vis-monitor4
+spec:
+  selector:
+    app: worker4
+  ports:
+    - name: http
+      port: 80
+      targetPort: 9500
+  type: NodePort
+  
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: worker4
+spec:
+  selector:
+    app: worker4
+  ports:
+    - name: synerex
+      port: 700
+      targetPort: 10000
+    - name: nodeid
+      port: 600
+      targetPort: 9000
+  
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: worker4
+  labels:
+    app: worker4
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker4
+  template:
+    metadata:
+      labels:
+        app: worker4
+    spec:
+      containers:
+      - name: nodeid-server
+        image: synerex-simulation/nodeid-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        ports:
+        - containerPort: 9000
+      - name: synerex-server
+        image: synerex-simulation/synerex-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        ports:
+        - containerPort: 10000
+      - name: worker-provider
+        image: synerex-simulation/worker-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: MASTER_SYNEREX_SERVER
+          value: master:700
+        - name: MASTER_NODEID_SERVER
+          value: master:600
+        - name: PORT
+          value: '9980'
+        ports:
+        - containerPort: 9980
+      - name: agent-provider
+        image: synerex-simulation/agent-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: AREA
+          value: "{\"id\":3, \"name\":\"Nagoya\", \"duplicate_area\": [{\"latitude\":35.158632600000004, \"longitude\":136.977662},{\"latitude\":35.1544574, \"longitude\":136.977662},{\"latitude\":35.1544574, \"longitude\":136.985026},{\"latitude\":35.158632600000004, \"longitude\":136.985026}], \"control_area\": [{\"latitude\":35.15828466666667, \"longitude\":136.97827566666666},{\"latitude\":35.15480533333333, \"longitude\":136.97827566666666},{\"latitude\":35.15480533333333, \"longitude\":136.98441233333332},{\"latitude\":35.15828466666667, \"longitude\":136.98441233333332}]}"
+      - name: visualization-provider
+        image: synerex-simulation/visualization-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: VIS_ADDRESS
+          value: ':9500'
+##############################################
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: vis-monitor5
+spec:
+  selector:
+    app: worker5
+  ports:
+    - name: http
+      port: 80
+      targetPort: 9500
+  type: NodePort
+  
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: worker5
+spec:
+  selector:
+    app: worker5
+  ports:
+    - name: synerex
+      port: 700
+      targetPort: 10000
+    - name: nodeid
+      port: 600
+      targetPort: 9000
+  
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: worker5
+  labels:
+    app: worker5
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker5
+  template:
+    metadata:
+      labels:
+        app: worker5
+    spec:
+      containers:
+      - name: nodeid-server
+        image: synerex-simulation/nodeid-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        ports:
+        - containerPort: 9000
+      - name: synerex-server
+        image: synerex-simulation/synerex-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        ports:
+        - containerPort: 10000
+      - name: worker-provider
+        image: synerex-simulation/worker-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: MASTER_SYNEREX_SERVER
+          value: master:700
+        - name: MASTER_NODEID_SERVER
+          value: master:600
+        - name: PORT
+          value: '9980'
+        ports:
+        - containerPort: 9980
+      - name: agent-provider
+        image: synerex-simulation/agent-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: AREA
+          value: "{\"id\":4, \"name\":\"Nagoya\", \"duplicate_area\": [{\"latitude\":35.158632600000004, \"longitude\":136.977662},{\"latitude\":35.1544574, \"longitude\":136.977662},{\"latitude\":35.1544574, \"longitude\":136.985026},{\"latitude\":35.158632600000004, \"longitude\":136.985026}], \"control_area\": [{\"latitude\":35.15828466666667, \"longitude\":136.97827566666666},{\"latitude\":35.15480533333333, \"longitude\":136.97827566666666},{\"latitude\":35.15480533333333, \"longitude\":136.98441233333332},{\"latitude\":35.15828466666667, \"longitude\":136.98441233333332}]}"
+      - name: visualization-provider
+        image: synerex-simulation/visualization-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: VIS_ADDRESS
+          value: ':9500'
+
+  ################################################################
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: vis-monitor6
+spec:
+  selector:
+    app: worker6
+  ports:
+    - name: http
+      port: 80
+      targetPort: 9500
+  type: NodePort
+  
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: worker6
+spec:
+  selector:
+    app: worker6
+  ports:
+    - name: synerex
+      port: 700
+      targetPort: 10000
+    - name: nodeid
+      port: 600
+      targetPort: 9000
+  
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: worker6
+  labels:
+    app: worker6
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker6
+  template:
+    metadata:
+      labels:
+        app: worker6
+    spec:
+      containers:
+      - name: nodeid-server
+        image: synerex-simulation/nodeid-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        ports:
+        - containerPort: 9000
+      - name: synerex-server
+        image: synerex-simulation/synerex-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        ports:
+        - containerPort: 10000
+      - name: worker-provider
+        image: synerex-simulation/worker-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: MASTER_SYNEREX_SERVER
+          value: master:700
+        - name: MASTER_NODEID_SERVER
+          value: master:600
+        - name: PORT
+          value: '9980'
+        ports:
+        - containerPort: 9980
+      - name: agent-provider
+        image: synerex-simulation/agent-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: AREA
+          value: "{\"id\":5, \"name\":\"Nagoya\", \"duplicate_area\": [{\"latitude\":35.158632600000004, \"longitude\":136.977662},{\"latitude\":35.1544574, \"longitude\":136.977662},{\"latitude\":35.1544574, \"longitude\":136.985026},{\"latitude\":35.158632600000004, \"longitude\":136.985026}], \"control_area\": [{\"latitude\":35.15828466666667, \"longitude\":136.97827566666666},{\"latitude\":35.15480533333333, \"longitude\":136.97827566666666},{\"latitude\":35.15480533333333, \"longitude\":136.98441233333332},{\"latitude\":35.15828466666667, \"longitude\":136.98441233333332}]}"
+      - name: visualization-provider
+        image: synerex-simulation/visualization-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: VIS_ADDRESS
+          value: ':9500'
+
+################################################################
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: vis-monitor7
+spec:
+  selector:
+    app: worker7
+  ports:
+    - name: http
+      port: 80
+      targetPort: 9500
+  type: NodePort
+  
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: worker7
+spec:
+  selector:
+    app: worker7
+  ports:
+    - name: synerex
+      port: 700
+      targetPort: 10000
+    - name: nodeid
+      port: 600
+      targetPort: 9000
+  
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: worker7
+  labels:
+    app: worker7
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker7
+  template:
+    metadata:
+      labels:
+        app: worker7
+    spec:
+      containers:
+      - name: nodeid-server
+        image: synerex-simulation/nodeid-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        ports:
+        - containerPort: 9000
+      - name: synerex-server
+        image: synerex-simulation/synerex-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        ports:
+        - containerPort: 10000
+      - name: worker-provider
+        image: synerex-simulation/worker-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: MASTER_SYNEREX_SERVER
+          value: master:700
+        - name: MASTER_NODEID_SERVER
+          value: master:600
+        - name: PORT
+          value: '9980'
+        ports:
+        - containerPort: 9980
+      - name: agent-provider
+        image: synerex-simulation/agent-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: AREA
+          value: "{\"id\":6, \"name\":\"Nagoya\", \"duplicate_area\": [{\"latitude\":35.16211193333333, \"longitude\":136.98379866666664},{\"latitude\":35.15793673333334, \"longitude\":136.98379866666664},{\"latitude\":35.15793673333334, \"longitude\":136.99116266666664},{\"latitude\":35.16211193333333, \"longitude\":136.99116266666664}], \"control_area\": [{\"latitude\":35.161764, \"longitude\":136.98441233333332},{\"latitude\":35.15828466666667, \"longitude\":136.98441233333332},{\"latitude\":35.15828466666667, \"longitude\":136.990549},{\"latitude\":35.161764, \"longitude\":136.990549}]}"
+      - name: visualization-provider
+        image: synerex-simulation/visualization-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: VIS_ADDRESS
+          value: ':9500'
+
+################################################################
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: vis-monitor8
+spec:
+  selector:
+    app: worker8
+  ports:
+    - name: http
+      port: 80
+      targetPort: 9500
+  type: NodePort
+  
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: worker8
+spec:
+  selector:
+    app: worker8
+  ports:
+    - name: synerex
+      port: 700
+      targetPort: 10000
+    - name: nodeid
+      port: 600
+      targetPort: 9000
+  
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: worker8
+  labels:
+    app: worker8
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker8
+  template:
+    metadata:
+      labels:
+        app: worker8
+    spec:
+      containers:
+      - name: nodeid-server
+        image: synerex-simulation/nodeid-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        ports:
+        - containerPort: 9000
+      - name: synerex-server
+        image: synerex-simulation/synerex-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        ports:
+        - containerPort: 10000
+      - name: worker-provider
+        image: synerex-simulation/worker-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: MASTER_SYNEREX_SERVER
+          value: master:700
+        - name: MASTER_NODEID_SERVER
+          value: master:600
+        - name: PORT
+          value: '9980'
+        ports:
+        - containerPort: 9980
+      - name: agent-provider
+        image: synerex-simulation/agent-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: AREA
+          value: "{\"id\":7, \"name\":\"Nagoya\", \"duplicate_area\": [{\"latitude\":35.16211193333333, \"longitude\":136.98379866666664},{\"latitude\":35.15793673333334, \"longitude\":136.98379866666664},{\"latitude\":35.15793673333334, \"longitude\":136.99116266666664},{\"latitude\":35.16211193333333, \"longitude\":136.99116266666664}], \"control_area\": [{\"latitude\":35.161764, \"longitude\":136.98441233333332},{\"latitude\":35.15828466666667, \"longitude\":136.98441233333332},{\"latitude\":35.15828466666667, \"longitude\":136.990549},{\"latitude\":35.161764, \"longitude\":136.990549}]}"
+      - name: visualization-provider
+        image: synerex-simulation/visualization-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: VIS_ADDRESS
+          value: ':9500'
+
+
+################################################################
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: vis-monitor9
+spec:
+  selector:
+    app: worker9
+  ports:
+    - name: http
+      port: 80
+      targetPort: 9500
+  type: NodePort
+  
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: worker9
+spec:
+  selector:
+    app: worker9
+  ports:
+    - name: synerex
+      port: 700
+      targetPort: 10000
+    - name: nodeid
+      port: 600
+      targetPort: 9000
+  
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: worker9
+  labels:
+    app: worker9
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker9
+  template:
+    metadata:
+      labels:
+        app: worker9
+    spec:
+      containers:
+      - name: nodeid-server
+        image: synerex-simulation/nodeid-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        ports:
+        - containerPort: 9000
+      - name: synerex-server
+        image: synerex-simulation/synerex-server:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        ports:
+        - containerPort: 10000
+      - name: worker-provider
+        image: synerex-simulation/worker-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: MASTER_SYNEREX_SERVER
+          value: master:700
+        - name: MASTER_NODEID_SERVER
+          value: master:600
+        - name: PORT
+          value: '9980'
+        ports:
+        - containerPort: 9980
+      - name: agent-provider
+        image: synerex-simulation/agent-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: AREA
+          value: "{\"id\":8, \"name\":\"Nagoya\", \"duplicate_area\": [{\"latitude\":35.16211193333333, \"longitude\":136.98379866666664},{\"latitude\":35.15793673333334, \"longitude\":136.98379866666664},{\"latitude\":35.15793673333334, \"longitude\":136.99116266666664},{\"latitude\":35.16211193333333, \"longitude\":136.99116266666664}], \"control_area\": [{\"latitude\":35.161764, \"longitude\":136.98441233333332},{\"latitude\":35.15828466666667, \"longitude\":136.98441233333332},{\"latitude\":35.15828466666667, \"longitude\":136.990549},{\"latitude\":35.161764, \"longitude\":136.990549}]}"
+      - name: visualization-provider
+        image: synerex-simulation/visualization-provider:latest 
+        imagePullPolicy: Never
+        env: 
+        - name: NODEID_SERVER
+          value: :9000
+        - name: SYNEREX_SERVER
+          value: :10000
+        - name: VIS_ADDRESS
+          value: ':9500'
+
